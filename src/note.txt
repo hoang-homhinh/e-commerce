@@ -1,0 +1,5 @@
+1. package morgan : dung de check log realtime 
+2. helmet : muc dich de bao mat ,bao ve cac thong tin , ngan chan ben thu ba doc cooke cua minh
+3. conpressi : khi van chuyen du lieu (payload) qua nhieu den dt, sever thi se ton bang thong n
+4. Cách kết nối db ;. sử dụng singaton partern
+5. file .env
