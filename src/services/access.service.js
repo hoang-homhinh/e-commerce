@@ -2,13 +2,14 @@
 const shopModel = require('../models/shop.model')
 const bcrypt = require("bcrypt")
 const crypto = require('crypto')
+const KeyTokenService = require('./keyToken.sevice')
+const { createTokenPair } = require('../auth/authUtils')
 const RoleShop = {
     SHOP: 'SHOP',
     WRITER: 'WRITER',
     EDITOR: 'EDITOR',
     ADMIN: 'ADMIN'
 }
-
 class AccessService {
     static signUp = async ({name,email,password}) =>{
         try {
@@ -22,26 +23,40 @@ class AccessService {
             }
             const passwordHash = await bcrypt.hash(password,10)
             const newShop = await shopModel.create({
-                name,email,passwordHash,roles : [RoleShop.SHOP]
+                name,email,password: passwordHash,roles : [RoleShop.SHOP]
             })
    
             if (newShop) {
                 //created privatekey : dung de sign tocken, publickey: dung de verify tocken
-                const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
-                    modulusLength: 4096, // Độ dài của modulo (n), tính bằng bit, mặc định là 2048
-                    publicKeyEncoding: {
-                        type: 'pkcs1', // Loại mã hóa của khóa công khai (hoặc 'spki' cho ECC)
-                        format: 'pem' // Định dạng đầu ra (ví dụ: 'pem', 'der')
-                    },
-                    privateKeyEncoding: {
-                        type: 'pkcs1', // Loại mã hóa của khóa riêng tư (hoặc 'sec1' cho ECC)
-                        format: 'pem', // Định dạng đầu ra (ví dụ: 'pem', 'der')
-                        cipher: 'aes-256-cbc', // Thuật toán mã hóa dùng để bảo vệ khóa riêng tư
-                        passphrase: 'yourPassphrase' // Passphrase để mã hóa khóa riêng tư (tùy chọn)
-                    }
+                const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+                    modulusLength: 4096,
                 });
-                console.log(publicKey);
-                console.log(privateKey);
+                const publicKeyString = await KeyTokenService.createKeyToken({
+                    userId: newShop._id,
+                    publicKey
+                })
+
+                if(!publicKeyString){
+                    return{
+                        code:'xxxx',
+                        message: 'publicKeyString error'
+                    }
+                }
+                const tokens = await createTokenPair({userId: newShop._id,email,publicKey,privateKey})
+                console.log(`create Token Succsess::`, tokens);
+
+                return {
+                    code : 201,
+                    metadata: {
+                        shop: newShop,
+                        tokens
+                    }
+                }
+               
+            }
+            return {
+                code: 200,
+                metadata:null
             }
             
         } catch (error) {

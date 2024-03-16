@@ -4,13 +4,14 @@
 
 const { ObjectId } = require('mongodb');
 const mongoose = require('mongoose'); // Erase if already required
+const Schema = mongoose.Schema;
 
 const DOCUMENT_NAME = 'Key'
 const COLLECTION_NAME = 'Keys'
 // Declare the Schema of the Mongo model
 var keyTokenSchema = new mongoose.Schema({
     user:{
-        type:ObjectId,
+        type:Schema.Types.ObjectId,
         required:true,
         ref:'Shop'
     },

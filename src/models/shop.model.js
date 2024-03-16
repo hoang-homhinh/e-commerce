@@ -21,7 +21,7 @@ var shopSchema = new mongoose.Schema({
     },
     status:{
         type:String,
-        enum:['active','unactive'],
+        enum:['inactive','unactive'],
         default:'unactive'
     },
     verify:{
